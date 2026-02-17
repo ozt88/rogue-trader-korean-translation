@@ -10,14 +10,52 @@
 ### 완료된 수정 사항
 1. **태그 오류**: 9개 수정 완료
 2. **조사 중복**: 545개 수정 완료
+3. **문장 부호 띄어쓰기**: 3,157개 수정 완료 (`.`, `!`, `?` 뒤 공백 추가)
 
-## 남은 작업
+## 릴리즈 및 배포 워크플로우
 
-### 자동화 가능 (수동 검토 필요)
-| 작업 | 수량 | 난이도 |
-|------|------|--------|
-| 문체 불일치 | 987개 | 높음 |
-| 경어 불일치 | 153개 | 높음 |
+### 전체 프로세스
+```
+1. 번역 수정 → 2. Git Commit → 3. Git Tag Push → 4. GitHub 릴리즈 → 5. 로컬 배포
+```
+
+### 1. 번역 수정
+- `enGB_new.json` 파일 직접 수정
+- 또는 Python 스크립트로 일괄 수정
+
+### 2. Git Commit & Push
+```bash
+git add enGB_new.json
+git commit -m "fix: 수정 내용 설명"
+git push origin master
+```
+
+### 3. GitHub 릴리즈 자동 생성
+```bash
+# 다음 버전 태그 생성 (예: v1.0.9)
+git tag v1.0.9
+git push origin v1.0.9
+```
+- GitHub Actions가 자동으로 Release 생성
+- `enGB.json` 파일 자동 첨부
+- 릴리즈 URL: https://github.com/ozt88/rogue-trader-korean-translation/releases
+
+### 4. 로컬 배포
+```powershell
+# PowerShell에서 실행
+.\update_translation.ps1
+```
+
+**스크립트 기능:**
+- 자동으로 게임 설치 경로 탐색 (Steam 라이브러리 4개 경로)
+- GitHub에서 최신 `enGB.json` 다운로드
+- 기존 파일 자동 백업 (`enGB_backup_YYYYMMDD.json`)
+- 게임 폼더에 자동 적용
+
+### 5. 게임 실행
+배포 완료 후 게임을 실행하면 수정된 번역이 적용됩니다.
+
+---
 
 ## 작업 방법
 
@@ -59,7 +97,7 @@ if orig_open != orig_close or trans_open != trans_close:
 2. **태그 중복**: `{g|...}{g|...}` → 중복 닫기
 3. **조사 중복**: "은은", "는는" → "은", "는"
 
-## 다음 작업자へのメッセージ
+## 다음 작업자에게
 
 이 프로젝트는 99% 완료되었습니다. 남은 작업은 대부분 수동 검토가 필요하며, 자동화하기 어려운 영역입니다.
 

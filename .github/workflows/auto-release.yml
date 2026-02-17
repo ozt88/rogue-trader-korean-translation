@@ -1,10 +1,10 @@
-name: Auto Release on Translation Update
+name: Auto Release on Tag Push
 
 on:
   push:
-    branches: [ master ]
-    paths:
-      - 'enGB_new.json'
+    tags:
+      - 'v*'
+      - 'V*'
   workflow_dispatch:
 
 jobs:
@@ -27,32 +27,34 @@ jobs:
         run: |
           echo "message=$(git log -1 --pretty=%s)" >> $GITHUB_OUTPUT
           echo "short_sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-      
-      - name: Generate version tag
-        id: version
-        run: |
-          # Count commits that modified enGB_new.json
-          COUNT=$(git log --oneline --follow -- enGB_new.json | wc -l)
-          echo "tag=v1.0.${COUNT}" >> $GITHUB_OUTPUT
-          echo "name=Translation Update v1.0.${COUNT}" >> $GITHUB_OUTPUT
+          echo "date=$(date '+%Y-%m-%d %H:%M:%S')" >> $GITHUB_OUTPUT
       
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ steps.version.outputs.tag }}
-          name: ${{ steps.version.outputs.name }}
+          tag_name: ${{ github.ref_name }}
+          name: "번역 파일 ${{ github.ref_name }}"
           body: |
-            ## 변경 사항
+            ## Warhammer 40,000: Rogue Trader 한국어 번역
+            
+            ### 버전 정보
+            - **태그**: ${{ github.ref_name }}
+            - **커밋**: `${{ steps.commit.outputs.short_sha }}`
+            - **릴리스 날짜**: ${{ steps.commit.outputs.date }}
+            
+            ### 최근 변경 사항
             ${{ steps.commit.outputs.message }}
             
-            ### 커밋
-            - SHA: `${{ steps.commit.outputs.short_sha }}`
-            - 날짜: ${{ github.event.head_commit.timestamp }}
-            
             ### 설치 방법
-            1. `enGB.json` 파일을 다운로드
-            2. 게임 설치 폴더의 `Localization` 폴더에 복사
-            3. 기존 `enGB.json`을 백업한 후 교체
+            1. 아래 `enGB.json` 파일을 다운로드
+            2. 게임 설치 폼더의 `WH40KRT_Data/StreamingAssets/Localization` 폼더로 이동
+            3. 기존 `enGB.json`을 백업 (예: `enGB_backup.json`으로 이름 변경)
+            4. 다운로드한 `enGB.json`을 붙여넣기
+            5. 게임 실행
+            
+            ### 주의사항
+            - 게임 업데이트 시 번역 파일이 초기화될 수 있으니 백업을 권장합니다.
+            - 문제 발생 시 GitHub Issues에 등록해 주세요.
           files: enGB.json
           draft: false
           prerelease: false
